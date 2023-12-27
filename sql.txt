@@ -1,0 +1,100 @@
+/*
+Title: Assignment 4
+Description: Sailing Adventure SQL
+Name: Rayyan Dirie
+Date: 12/03/2023
+Section: 001
+*/
+
+Add Sailor:
+
+DELIMITER $$
+CREATE PROCEDURE addSailor(IN S_name VARCHAR(255), IN B_date DATE, IN Rate INT, OUT message VARCHAR(255))
+BEGIN 
+IF FLOOR(DATEDIFF(CURDATE(),B_date)/365) >= 24 
+THEN
+INSERT INTO SailingAdventure.sailors (S_name, B_Date, Rate) VALUES (S_name, B_date, Rate); 
+SET message = 'Sailor Added'; 
+ELSE 
+SET message = 'Sailor must be older than 24'; 
+END IF; 
+END$$
+DELIMITER ;
+
+Sailor Before:
+
+DELIMITER $$
+CREATE PROCEDURE sailorBefore(IN age INTEGER)
+BEGIN 
+SELECT S_Id, S_name, DATE_FORMAT(B_date, "%a %b %d %Y") FROM SailingAdventure.sailors WHERE FLOOR(DATEDIFF(CURDATE(),B_date)/365) < age;
+END$$
+DELIMITER ;
+
+Sailor After:
+
+DELIMITER $$
+CREATE PROCEDURE sailorAfter(IN age INTEGER)
+BEGIN 
+SELECT S_Id, S_name, DATE_FORMAT(B_date, "%a %b %d %Y") FROM SailingAdventure.sailors WHERE FLOOR(DATEDIFF(CURDATE(),B_date)/365) > age;
+END$$
+DELIMITER ;
+
+Type Boat:
+
+DELIMITER $$
+CREATE PROCEDURE boatType(IN boatType VARCHAR(255))
+BEGIN 
+SELECT B_Id, B_Name FROM SailingAdventure.boats WHERE boatType = Type;
+END$$
+DELIMITER ;
+
+Count Boat:
+
+DELIMITER $$
+CREATE PROCEDURE boatCount(IN boatType VARCHAR(255), OUT cnt INTEGER)
+BEGIN 
+SELECT COUNT(*) INTO cnt FROM SailingAdventure.boats WHERE boatType = Type;
+END$$
+DELIMITER ;
+
+Add Reserves:
+DELIMITER $$
+CREATE PROCEDURE addReserve(IN sID INTEGER, IN bID INTEGER, IN day DATE, OUT msg VARCHAR(255)) 
+ BEGIN
+    DECLARE boatType VARCHAR(255);
+	DECLARE sailorRate INTEGER;
+    SELECT Rate INTO sailorRate FROM SailingAdventure.sailors WHERE S_Id = sID;
+	SELECT Type INTO boatType FROM SailingAdventure.boats WHERE B_Id = bID;
+    IF boatType = 'Fishing' AND sailorRate <= 7 THEN SET msg = 'Reservation can not be done for requested boat - Sailor rate is low';
+    ELSEIF boatType = 'Sailboat' AND sailorRate <= 5 THEN SET msg = 'Reservation can not be done for requested boat - Sailor rate is low';
+    ELSEIF (boatType = 'Fishing' OR boatType = 'Sailboat') AND sailorRate <= 2 THEN SET msg = 'Reservation can not be done for requested boat - Sailor rate is low';
+    ELSE SET msg = 'Reservation successful';
+    INSERT INTO SailingAdventure.reserves (S_Id, B_Id, Day) VALUES (sID, bID, day);
+ END IF;
+ END
+	$$
+DELIMITER ;
+
+Reserve Before:
+
+DELIMITER $$
+CREATE PROCEDURE reserveBefore(IN reserveTime DATE)
+BEGIN 
+SELECT boats.B_Id, boats.B_name, DATE_FORMAT(reserves.Day, "%a %b %d %Y") FROM SailingAdventure.boats 
+INNER JOIN SailingAdventure.reserves ON boats.B_Id = reserves.B_Id
+WHERE reserveTime > reserves.Day;
+END$$
+DELIMITER ;
+
+Reserve After:
+
+DELIMITER $$
+CREATE PROCEDURE reserveAfter(IN reserveTime DATE)
+BEGIN 
+SELECT boats.B_Id, boats.B_name, DATE_FORMAT(reserves.Day, "%a %b %d %Y") FROM SailingAdventure.boats 
+INNER JOIN SailingAdventure.reserves ON boats.B_Id = reserves.B_Id
+WHERE reserveTime < reserves.Day;
+END$$
+DELIMITER ;
+
+
