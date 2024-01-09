@@ -17,7 +17,7 @@ const {URL} = require("url");
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'RayCS_Mason23',
+    password: 'adminPass',
     multipleStatements: true,
 });
 
